@@ -1,0 +1,221 @@
+import 'package:flutter/material.dart';
+
+void main() {
+  runApp(const MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  // This widget is the root of your application.
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Flutter Demo',
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+      ),
+      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+    );
+  }
+}
+
+class MyHomePage extends StatefulWidget {
+  const MyHomePage({super.key, required this.title});
+  final String title;
+
+  @override
+  State<MyHomePage> createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateMixin {
+
+  final PageController _pageController = PageController();
+  int _currentPage = 0;
+
+  late final AnimationController _bottleAnimationController;
+
+  static const List<Color> _softMintGradient = [
+    Color(0xFFFFD847),
+    Color.fromARGB(255, 219, 190, 85),
+  ];
+
+  static const List<Color> _meadowSoftGradient = [
+    Color(0xFFFFF6FB),
+    Color(0xFFFFFFFF),
+  ];
+
+  static const List<Color> _oceanSoftGradient = [
+    Color(0xFFE8FAFF),
+    Color(0xFFFFFFFF),
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _bottleAnimationController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 3),
+    )..forward();
+  }
+
+  @override
+  void dispose() {
+    _bottleAnimationController.dispose();
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  void _nextPage() {
+    if (_currentPage < 2) {
+      _pageController.nextPage(
+        duration: const Duration(milliseconds: 350),
+        curve: Curves.easeInOut,
+      );
+    } else {
+    }
+  }
+
+ @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+          body: SizedBox.expand(
+        child: Stack(
+          children: [
+        
+            // Page content - properly constrained
+            Positioned.fill(
+              child: PageView.builder(
+                controller: _pageController,
+                itemCount: 3,
+                physics: const ClampingScrollPhysics(),
+                onPageChanged: (index) {
+                  if (mounted) {
+                    setState(() => _currentPage = index);
+                    if (index == 0) {
+                      _bottleAnimationController.forward(from: 0.0);
+                    }
+                  }
+                },
+                itemBuilder: (_, index) {
+                  switch (index) {
+                    case 0:
+                      return _bottleOrange();
+                    case 1:
+                      return _bottleOrange();
+                    case 2:
+                      return _bottleMango();
+                    default:
+                      return const SizedBox();
+                  }
+                },
+              ),
+            ),
+        
+          
+          ],
+        ),
+      ),
+    );
+  }
+  
+ Widget  _bottleOrange() {
+  return AnimatedBuilder(
+    animation: _bottleAnimationController,
+    builder: (context, child) {
+      final t = _bottleAnimationController.value;
+
+      double sliptOpacity;
+      double sliceOpacity;
+      double introScale;
+
+      if (t <= 0.5) {
+        final u = t / 0.5;
+        final curved = Curves.easeOutBack.transform(u.clamp(0.0, 1.0));
+        sliptOpacity = Curves.easeIn.transform(u).clamp(0.0, 1.0);
+        sliceOpacity = sliptOpacity; // visible exactly while slipt_orange is in
+        introScale = 0.7 + 0.3 * curved; // small pop-in for slice_orange
+      } else {
+        sliptOpacity = 0.0;
+        sliceOpacity = 0.0;
+        introScale = 1.0;
+      }
+
+      double orangeOpacity;
+      double orangeScale;
+      if (t < 0.5) {
+        orangeOpacity = 0.0;
+        orangeScale = 0.5;
+      } else {
+        final u = (t - 0.5) / 0.5;
+        final curved = Curves.easeOutBack.transform(u.clamp(0.0, 1.0));
+        orangeOpacity = curved.clamp(0.0, 1.0);
+        orangeScale = 0.5 + 0.5 * curved; // from 0.5 to 1.0 with pop effect
+      }
+
+      return Stack(
+        fit: StackFit.expand,
+        children: [
+          Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                colors: _softMintGradient,
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+              ),
+            ),
+          ),
+          // slice_orange appears after first fade completes
+          if (sliceOpacity > 0)
+            Opacity(
+              opacity: sliceOpacity,
+              child: Center(
+                child: Transform.scale(
+                  scale: introScale,
+                  child: Image.asset(
+                    'assets/slice_orange.png',
+                  ),
+                ),
+              ),
+            ),
+          // Final orange bottle pops in and ends as the only visible image
+          if (orangeOpacity > 0)
+            Opacity(
+              opacity: orangeOpacity,
+              child: Center(
+                child: Transform.scale(
+                  scale: orangeScale,
+                  child: Image.asset(
+                    'assets/orange.png',
+                    fit: BoxFit.contain,
+                  ),
+                ),
+              ),
+            ),
+          // slipt_orange does the initial fade-in background effect
+          if (sliptOpacity > 0)
+            Opacity(
+              opacity: sliptOpacity,
+              child: Image.asset(
+                'assets/slipt_orange.png',
+                fit: BoxFit.cover,
+              ),
+            ),
+        ],
+      );
+    },
+  );
+ }
+  
+  Widget _bottelPurpele() {
+    return Stack(
+      fit: StackFit.expand,
+      children: []);
+  }
+  
+ Widget  _bottleMango() {
+  return Stack(
+      fit: StackFit.expand,
+      children: []);
+ }
+}
